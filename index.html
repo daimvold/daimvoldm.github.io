@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>С Днём Рождения!</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1b1f4b;--bg2:#2a2f6e;--pink:#ff4f81;--sun:#ffc83d;--mint:#3ddbb0;--sky:#4cc3ff;--ink:#fff}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:Nunito,Arial,sans-serif;
+background:radial-gradient(circle at 20% 0,var(--bg2),var(--bg) 60%) fixed;overflow-x:hidden}
+canvas#c{position:fixed;inset:0;pointer-events:none;z-index:5}
+.bunting{height:70px;display:flex;overflow:hidden;filter:drop-shadow(0 3px 0 rgba(0,0,0,.2))}
+.bunting i{flex:0 0 56px;height:62px;clip-path:polygon(0 0,100% 0,50% 100%)}
+.bunting i:nth-child(4n+1){background:var(--pink)}.bunting i:nth-child(4n+2){background:var(--sun)}
+.bunting i:nth-child(4n+3){background:var(--mint)}.bunting i:nth-child(4n){background:var(--sky)}
+header{text-align:center;padding:24px 16px 8px}
+h1{font-family:Pacifico,cursive;font-weight:400;font-size:clamp(2.6rem,9vw,5.5rem);margin:0;line-height:1.15;
+color:var(--sun);text-shadow:3px 3px 0 var(--pink),6px 6px 0 rgba(0,0,0,.25)}
+.sub{font-size:1.15rem;opacity:.9;margin:14px auto 0;max-width:34ch}
+main{max-width:980px;margin:0 auto;padding:24px 16px 60px}
+h2{font-family:Pacifico,cursive;font-weight:400;text-align:center;font-size:1.8rem;margin:18px 0 22px}
+.years{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:18px}
+.year{border:0;cursor:pointer;font:800 2rem Nunito,sans-serif;color:var(--bg);padding:26px 8px 18px;border-radius:18px;
+position:relative;transition:transform .2s}
+.year small{display:block;font-size:.85rem;font-weight:700;margin-top:4px;opacity:.75}
+.year::before{content:"";position:absolute;top:10px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--bg);opacity:.35}
+.year:nth-child(4n+1){background:var(--pink);transform:rotate(-2deg)}.year:nth-child(4n+2){background:var(--sun);transform:rotate(1.5deg)}
+.year:nth-child(4n+3){background:var(--mint);transform:rotate(-1deg)}.year:nth-child(4n){background:var(--sky);transform:rotate(2deg)}
+.year:hover,.year:focus-visible{transform:scale(1.08) rotate(0);outline:3px solid #fff}
+.back{background:none;border:2px solid var(--sun);color:var(--sun);font:800 1rem Nunito,sans-serif;padding:10px 18px;border-radius:30px;cursor:pointer}
+.back:hover,.back:focus-visible{background:var(--sun);color:var(--bg);outline:none}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:26px;margin-top:10px}
+figure{margin:0;background:#fff;color:var(--bg);padding:12px 12px 16px;border-radius:6px;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+figure:nth-child(odd){transform:rotate(-1.2deg)}figure:nth-child(even){transform:rotate(1.2deg)}
+.ph{aspect-ratio:4/5;width:100%;display:block;object-fit:cover;border-radius:3px;background:linear-gradient(135deg,var(--sun),var(--pink));cursor:zoom-in}
+.empty{display:grid;place-items:center;font-size:3.5rem;cursor:default}
+figcaption{margin-top:12px;font-weight:700;line-height:1.4}
+#lb{position:fixed;inset:0;background:rgba(10,12,40,.92);display:none;place-items:center;z-index:10;cursor:zoom-out;padding:16px}
+#lb.on{display:grid}#lb img{max-width:100%;max-height:90vh;border-radius:6px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="bunting" aria-hidden="true"></div>
+<header>
+  <h1>С Днём Рождения!</h1>
+  <p class="sub" id="sub"></p>
+</header>
+<main>
+  <section id="home">
+    <h2>Выбери год</h2>
+    <div class="years" id="years"></div>
+  </section>
+  <section id="year" hidden>
+    <button class="back" id="back">← Все годы</button>
+    <h2 id="ytitle"></h2>
+    <div class="gallery" id="gal"></div>
+  </section>
+</main>
+<div id="lb"><img alt=""></div>
+
+<script>
+/* ============ ЗДЕСЬ МЕНЯЕМ СВОИ ДАННЫЕ ============
+   1. Положите фото в папку "photos" рядом с этим файлом.
+   2. Для каждого года впишите фото: src — путь к файлу, text — подпись.
+   3. Пока src пустой, показывается заглушка 🎈 — пример ниже. */
+const SUBTITLE = "Путешествие по детским фотографиям — год за годом";
+const DATA = {
+  2009: [
+  {src:"photos/2009.jpg", text:""},
+    {src:"photos/i (92).webp", text:""},
+    {src:"photos/i (91).webp", text:""}
+  ],
+  2010: [
+    {src:"photos/i (1).webp", text:""},
+    {src:"photos/i (2).webp", text:""},
+    {src:"photos/i (3).webp", text:""},
+    {src:"photos/i (4).webp", text:""},
+    {src:"photos/i (5).webp", text:""},
+    {src:"photos/i.webp", text:""}
+  ],
+2012: [
+  {src:"photos/i (16).webp", text:""},
+  {src:"photos/i (17).webp", text:""},
+  {src:"photos/i (18).webp", text:""},
+  {src:"photos/i (19).webp", text:""},
+  {src:"photos/i (20).webp", text:""},
+  {src:"photos/i (21).webp", text:""},
+  {src:"photos/i (22).webp", text:""},
+  {src:"photos/i (23).webp", text:""}
+  ],
+2013: [
+  {src:"photos/i (24).webp", text:""},
+  {src:"photos/i (25).webp", text:""},
+  {src:"photos/i (26).webp", text:""},
+  {src:"photos/i (78).webp", text:""},
+  {src:"photos/i (83).webp", text:""},
+  {src:"photos/i (84).webp", text:""},
+  {src:"photos/i (85).webp", text:""},
+  {src:"photos/i (88).webp", text:""},
+  {src:"photos/i (86).webp", text:""},
+  {src:"photos/i (89).webp", text:""},
+  {src:"photos/i (90).webp", text:""},
+  {src:"photos/i (87).webp", text:""},
+  {src:"photos/i (27).webp", text:""},
+  {src:"photos/i (46).webp", text:""},
+  {src:"photos/i (47).webp", text:""},
+  {src:"photos/i (50).webp", text:""},
+  {src:"photos/i (51).webp", text:""},
+  {src:"photos/i (52).webp", text:""},
+  {src:"photos/i (53).webp", text:""},
+  {src:"photos/i (28).webp", text:""}
+  ],
+2014: [
+  {src:"photos/i (29).webp", text:""},
+  {src:"photos/i (30).webp", text:""},
+  {src:"photos/i (31).webp", text:""},
+  {src:"photos/i (48).webp", text:""},
+  {src:"photos/i (80).webp", text:""},
+  {src:"photos/i (49).webp", text:""},
+  {src:"photos/i (32).webp", text:""},
+  {src:"photos/i (54).webp", text:""},
+  {src:"photos/i (33).webp", text:""}
+  ],
+2016: [
+  {src:"photos/i (55).webp", text:""},
+  {src:"photos/i (56).webp", text:""},
+  {src:"photos/i (57).webp", text:""},
+  {src:"photos/i (58).webp", text:""},
+  {src:"photos/i (59).webp", text:""},
+  {src:"photos/i (69).webp", text:""},
+  {src:"photos/i (60).webp", text:""}
+  ],
+2017: [
+  {src:"photos/i (61).webp", text:""},
+  {src:"photos/i (70).webp", text:""},
+  {src:"photos/i (81).webp", text:""},
+  {src:"photos/i (66).webp", text:""}
+  ],
+2018: [
+  {src:"photos/i (71).webp", text:""},
+  {src:"photos/i (73).webp", text:""},
+  {src:"photos/i (74).webp", text:""},
+  {src:"photos/i (75).webp", text:""},
+  {src:"photos/i (72).webp", text:""}
+  ],
+2019: [
+  {src:"photos/i (62).webp", text:""},
+  {src:"photos/i (76).webp", text:""},
+  {src:"photos/i (63).webp", text:""}
+  ],
+2020: [
+  {src:"photos/i (64).webp", text:""},
+  {src:"photos/i (65).webp", text:""}
+  ],
+2015: [
+  {src:"photos/i (34).webp", text:""},
+  {src:"photos/i (35).webp", text:""},
+  {src:"photos/i (36).webp", text:""},
+  {src:"photos/i (37).webp", text:""},
+  {src:"photos/i (38).webp", text:""},
+  {src:"photos/i (39).webp", text:""},
+  {src:"photos/i (40).webp", text:""},
+  {src:"photos/i (41).webp", text:""},
+  {src:"photos/i (42).webp", text:""},
+  {src:"photos/i (43).webp", text:""},
+  {src:"photos/i (44).webp", text:""},
+  {src:"photos/i (67).webp", text:""},
+  {src:"photos/i (68).webp", text:""},
+  {src:"photos/i (45).webp", text:""}
+  ],
+  2011: [
+    {src:"photos/i (6).webp", text:""},
+    {src:"photos/i (7).webp", text:""},
+    {src:"photos/i (8).webp", text:""},
+    {src:"photos/i (9).webp", text:""},
+    {src:"photos/i (10).webp", text:""},
+    {src:"photos/i (77).webp", text:""},
+    {src:"photos/i (11).webp", text:""},
+    {src:"photos/i (93).webp", text:""},
+    {src:"photos/i (12).webp", text:""},
+    {src:"photos/i (13).webp", text:""},
+    {src:"photos/i (14).webp", text:""},
+    {src:"photos/i (15).webp", text:""}
+  ]
+};
+/* ================================================= */
+
+const $ = id => document.getElementById(id);
+$("sub").textContent = SUBTITLE;
+$("years").previousElementSibling;
+const b = document.querySelector(".bunting");
+b.innerHTML = "<i></i>".repeat(Math.ceil(innerWidth/56)+2);
+
+function plural(n){const m=n%10,h=n%100;return (m==1&&h!=11)?"фото":(m>=2&&m<=4&&(h<12||h>14))?"фото":"фото"}
+Object.keys(DATA).sort().forEach(y=>{
+  const el = document.createElement("button");
+  el.className = "year";
+  el.innerHTML = y + "<small>" + DATA[y].length + " " + plural(DATA[y].length) + "</small>";
+  el.onclick = () => { location.hash = y; };
+  $("years").appendChild(el);
+});
+
+function show(){
+  const y = location.hash.slice(1);
+  if(DATA[y]){
+    $("home").hidden = true; $("year").hidden = false;
+    $("ytitle").textContent = y + " год";
+    const g = $("gal"); g.innerHTML = "";
+    DATA[y].forEach(p=>{
+      const f = document.createElement("figure");
+      let m;
+      if(p.src){ m = document.createElement("img"); m.className="ph"; m.src=p.src; m.alt=p.text;
+        m.onclick = () => { $("lb").firstElementChild.src = p.src; $("lb").classList.add("on"); }; }
+      else { m = document.createElement("div"); m.className="ph empty"; m.textContent="🎈"; }
+      const c = document.createElement("figcaption"); c.textContent = p.text;
+      f.append(m,c); g.appendChild(f);
+    });
+    scrollTo(0,0);
+  } else { $("home").hidden = false; $("year").hidden = true; }
+}
+$("back").onclick = () => { location.hash = ""; };
+$("lb").onclick = () => $("lb").classList.remove("on");
+addEventListener("keydown",e=>{ if(e.key==="Escape") $("lb").classList.remove("on"); });
+addEventListener("hashchange",show); show();
+
+/* конфетти при открытии */
+(function(){
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  const c=$("c"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+  const col=["#ff4f81","#ffc83d","#3ddbb0","#4cc3ff","#fff"];
+  const p=Array.from({length:130},()=>({x:Math.random()*c.width,y:-Math.random()*c.height,
+    s:5+Math.random()*7,v:2+Math.random()*3,r:Math.random()*6,w:Math.random()*.2-.1,c:col[Math.random()*5|0]}));
+  let t=0;(function f(){x.clearRect(0,0,c.width,c.height);
+    p.forEach(a=>{a.y+=a.v;a.r+=a.w;a.x+=Math.sin(a.r);x.save();x.translate(a.x,a.y);x.rotate(a.r);
+      x.fillStyle=a.c;x.fillRect(-a.s/2,-a.s/4,a.s,a.s/2);x.restore()});
+    if(++t<420)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})();
+})();
+</script>
+</body>
+</html>
